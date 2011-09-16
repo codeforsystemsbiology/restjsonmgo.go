@@ -1,6 +1,6 @@
 include $(GOROOT)/src/Make.inc
 
-TARG=golem
+TARG=restmgo
 GOFILES=\
 	mongodb.go\
 	restjson.go\
