@@ -20,7 +20,6 @@
 package main
 
 import (
-	"flag"
 	"http"
 	"os"
 	"url"
@@ -30,31 +29,30 @@ import (
 )
 
 var logger *log4go.VerboseLogger
+var configFile *conf.ConfigFile
 
-//parse args and start as master, scribe, addama proxy or worker
+// starts HTTP server with REST resources for configured domains
 func main() {
-	var configurationFile string
-	flag.StringVar(&configurationFile, "config", "rest-json-mgo.config", "A configuration file for MongoDB REST+JSON Service")
-	flag.Parse()
+	InitConfigFile()
+	InitLogger()
+	StartREST()
+	StartHtmlHandler()
+	ListenAndServe()
+}
 
-	configFile, err := conf.ReadConfigFile(configurationFile)
-	if err != nil {
-		panic(err)
-	}
-
-	GlobalLogger(configFile)
-	StartREST(configFile)
-	StartHtmlHandler(configFile)
-
-	hostname := GetRequiredString(configFile, "default", "hostname")
-	if err = http.ListenAndServe(hostname, nil); err != nil {
+// sets up global config file
+// looks for "restjsonmgo.config" in execution PATH
+func InitConfigFile() {
+	if cf, err := conf.ReadConfigFile("restjsonmgo.config"); err != nil {
 		logger.Fatal(err.String())
+	} else {
+		configFile = cf
 	}
 }
 
 // sets global logger based on verbosity level in configuration
 // optional parameter:  default.verbose (defaults to true if not present or incorrectly set)
-func GlobalLogger(configFile *conf.ConfigFile) {
+func InitLogger() {
 	verbose, err := configFile.GetBool("default", "verbose")
 	logger = log4go.NewVerboseLogger(verbose, nil, "")
 	if err != nil {
@@ -67,7 +65,7 @@ func GlobalLogger(configFile *conf.ConfigFile) {
 // starts service based on the given configuration file
 // required parameters:  sections for each domain object accepted (e.g. jobs for /jobs)
 // optional parameters:  [domain_group] contentType=application/json (default)
-func StartREST(configFile *conf.ConfigFile) {
+func StartREST() {
 	domains := configFile.GetSections()
 	for _, domain := range domains {
 		dbhost := GetRequiredString(configFile, domain, "dbHost")
@@ -95,11 +93,19 @@ func StartREST(configFile *conf.ConfigFile) {
 
 // starts http handlers for HTML content based on the given configuration file
 // optional parameters:  default.contentDirectory (location of html content to be served at https://example.com/ or https://example.com/html/index.html
-func StartHtmlHandler(configFile *conf.ConfigFile) {
+func StartHtmlHandler() {
 	if contentDir, _ := configFile.GetString("default", "contentDirectory"); contentDir != "" {
 		logger.Printf("StartHtmlHandler(): serving HTML content from [%v]", contentDir)
 		http.Handle("/html/", http.StripPrefix("/html/", http.FileServer(http.Dir(contentDir))))
 		http.Handle("/", http.RedirectHandler("/html/", http.StatusTemporaryRedirect))
+	}
+}
+
+// starts HTTP server based on hostname in configuration file
+func ListenAndServe() {
+	hostname := GetRequiredString(configFile, "default", "hostname")
+	if err := http.ListenAndServe(hostname, nil); err != nil {
+		logger.Fatal(err.String())
 	}
 }
 
