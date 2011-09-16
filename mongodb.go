@@ -27,8 +27,8 @@ import (
 
 type JsonStore struct {
 	Domain string
-	Host  string
-	Store string
+	Host   string
+	Store  string
 }
 
 func (this *JsonStore) GetCollection() (c mgo.Collection, err os.Error) {
@@ -91,11 +91,11 @@ func (this *JsonStore) Update(itemId string, item interface{}) (err os.Error) {
 }
 
 func (this *JsonStore) Find(m map[string]interface{}) (items []interface{}, err os.Error) {
-//    queryByValues := bson.M{}
-//    for key, val := range values {
-//        queryByValues[key] = val
-//    }
-//    return this.Find(values)
+	//    queryByValues := bson.M{}
+	//    for key, val := range values {
+	//        queryByValues[key] = val
+	//    }
+	//    return this.Find(values)
 	logger.Debug("Find(%v)", m)
 	collection, err := this.GetCollection()
 	if err != nil {

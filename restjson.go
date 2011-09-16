@@ -50,7 +50,7 @@ func (this *RestJsonMongo) Index(rw http.ResponseWriter, values url.Values, head
 }
 // POST /<domain>
 func (this *RestJsonMongo) Create(rw http.ResponseWriter, r *http.Request) (item interface{}) {
-    logger.Debug("Create()")
+	logger.Debug("Create()")
 
 	if err := this.LoadJson(r, item); err != nil {
 		http.Error(rw, err.String(), http.StatusBadRequest)
@@ -64,7 +64,7 @@ func (this *RestJsonMongo) Create(rw http.ResponseWriter, r *http.Request) (item
 		return
 	}
 
-    this.Find(rw, itemId)
+	this.Find(rw, itemId)
 }
 // GET /<domain>/id
 func (this *RestJsonMongo) Find(rw http.ResponseWriter, id string) {
@@ -88,33 +88,33 @@ func (this *RestJsonMongo) Find(rw http.ResponseWriter, id string) {
 func (this *RestJsonMongo) Act(rw http.ResponseWriter, parts []string, r *http.Request) (item interface{}) {
 	logger.Debug("Act(%v):%v", r.URL.Path, parts)
 
-    domain := parts[0]
-    id := parts[1]
+	domain := parts[0]
+	id := parts[1]
 
 	if len(parts) < 2 {
-        if err := this.LoadJson(r, item); err != nil {
-            http.Error(rw, err.String(), http.StatusBadRequest)
-            return
-        } else {
-            if err := this.Store.Update(id, item); err != nil {
-                http.Error(rw, err.String(), http.StatusBadRequest)
-                return
-            }
-        }
+		if err := this.LoadJson(r, item); err != nil {
+			http.Error(rw, err.String(), http.StatusBadRequest)
+			return
+		} else {
+			if err := this.Store.Update(id, item); err != nil {
+				http.Error(rw, err.String(), http.StatusBadRequest)
+				return
+			}
+		}
 	}
 
-    if this.Target == nil {
-        http.Error(rw, fmt.Sprintf("service not found %v", r.URL.Path), http.StatusNotImplemented)
-        return
-    }
+	if this.Target == nil {
+		http.Error(rw, fmt.Sprintf("service not found %v", r.URL.Path), http.StatusNotImplemented)
+		return
+	}
 
-    preq, _ := http.NewRequest(r.Method, r.URL.Path, r.Body)
-    proxy := http.NewSingleHostReverseProxy(this.Target)
-    go proxy.ServeHTTP(rw, preq)
+	preq, _ := http.NewRequest(r.Method, r.URL.Path, r.Body)
+	proxy := http.NewSingleHostReverseProxy(this.Target)
+	go proxy.ServeHTTP(rw, preq)
 }
 
 func (this *RestJsonMongo) LoadJson(r *http.Request, item interface{}) (err os.Error) {
-    return
+	return
 }
 
 type ItemsHandle struct {

@@ -42,13 +42,13 @@ func main() {
 	}
 
 	GlobalLogger(configFile)
-    StartREST(configFile)
-    StartHtmlHandler(configFile)
+	StartREST(configFile)
+	StartHtmlHandler(configFile)
 
-    hostname := GetRequiredString(configFile, "default", "hostname")
-    if err = http.ListenAndServe(hostname, nil); err != nil {
-        logger.Fatal(err.String())
-    }
+	hostname := GetRequiredString(configFile, "default", "hostname")
+	if err = http.ListenAndServe(hostname, nil); err != nil {
+		logger.Fatal(err.String())
+	}
 }
 
 // sets global logger based on verbosity level in configuration
@@ -67,28 +67,28 @@ func GlobalLogger(configFile *conf.ConfigFile) {
 // required parameters:  sections for each domain object accepted (e.g. jobs for /jobs)
 // optional parameters:  [domain_group] contentType=application/json (default)
 func StartREST(configFile *conf.ConfigFile) {
-    domains := configFile.GetSections()
-    for _, domain := range domains {
-    	dbhost := GetRequiredString(configFile, domain, "dbHost")
-    	dbstore := GetRequiredString(configFile, domain, "dbName")
-    	proxyTarget, err := configFile.GetString(domain, "serviceProxy")
-    	if err != nil {
-    	    logger.Warn(err)
-    	    logger.Print("no service proxy configured")
-    	}
+	domains := configFile.GetSections()
+	for _, domain := range domains {
+		dbhost := GetRequiredString(configFile, domain, "dbHost")
+		dbstore := GetRequiredString(configFile, domain, "dbName")
+		proxyTarget, err := configFile.GetString(domain, "serviceProxy")
+		if err != nil {
+			logger.Warn(err)
+			logger.Print("no service proxy configured")
+		}
 
-        targetUrl, _ := url.Parse(proxyTarget)
-    	store := &JsonStore{Domain: domain, Host: dbhost, Store: dbstore}
-        rest.Resource(domain, RestJsonMongo{Store: store, Target: targetUrl})
+		targetUrl, _ := url.Parse(proxyTarget)
+		store := &JsonStore{Domain: domain, Host: dbhost, Store: dbstore}
+		rest.Resource(domain, RestJsonMongo{Store: store, Target: targetUrl})
 
-        contentType, err := configFile.GetString(domain, "contentType")
-        if err != nil {
-            logger.Warn(err)
-            logger.Print("Defaulting content type to application/json")
-            contentType = "application/json"
-        }
-        rest.ResourceContentType(domain, contentType)
-    }
+		contentType, err := configFile.GetString(domain, "contentType")
+		if err != nil {
+			logger.Warn(err)
+			logger.Print("Defaulting content type to application/json")
+			contentType = "application/json"
+		}
+		rest.ResourceContentType(domain, contentType)
+	}
 }
 
 // starts http handlers for HTML content based on the given configuration file
