@@ -1,0 +1,3 @@
+This project is meant to integrate two separate GO Lang Libraries:  rest.go and mgo.go
+* http://github.com/codeforsystemsbiology/rest.go
+* http://launchpad.net/mgo
