@@ -25,13 +25,15 @@ import (
 	"http"
 	"json"
 	"os"
+	"strings"
 	"url"
 )
 
 type RestJsonMongo struct {
-	Store  *JsonStore
-	Domain string
-	Target *url.URL
+	Store     *JsonStore
+	Domain    string
+	JsonParam string
+	Target    *url.URL
 }
 
 // GET /<domain>
@@ -65,6 +67,7 @@ func (this *RestJsonMongo) Create(rw http.ResponseWriter, r *http.Request) (item
 	}
 
 	this.Find(rw, itemId)
+	return
 }
 // GET /<domain>/id
 func (this *RestJsonMongo) Find(rw http.ResponseWriter, id string) {
@@ -88,14 +91,12 @@ func (this *RestJsonMongo) Find(rw http.ResponseWriter, id string) {
 func (this *RestJsonMongo) Act(rw http.ResponseWriter, parts []string, r *http.Request) (item interface{}) {
 	logger.Debug("Act(%v):%v", r.URL.Path, parts)
 
-	domain := parts[0]
-	id := parts[1]
-
 	if len(parts) < 2 {
 		if err := this.LoadJson(r, item); err != nil {
 			http.Error(rw, err.String(), http.StatusBadRequest)
 			return
 		} else {
+			id := parts[1]
 			if err := this.Store.Update(id, item); err != nil {
 				http.Error(rw, err.String(), http.StatusBadRequest)
 				return
@@ -111,9 +112,22 @@ func (this *RestJsonMongo) Act(rw http.ResponseWriter, parts []string, r *http.R
 	preq, _ := http.NewRequest(r.Method, r.URL.Path, r.Body)
 	proxy := http.NewSingleHostReverseProxy(this.Target)
 	go proxy.ServeHTTP(rw, preq)
+
+	return
 }
 
 func (this *RestJsonMongo) LoadJson(r *http.Request, item interface{}) (err os.Error) {
+	logger.Debug("LoadJson(%v)", r.URL.Path)
+
+	if err = r.ParseForm(); err != nil {
+		logger.Warn(err)
+		return
+	}
+
+	jsonfile := r.Form[this.JsonParam]
+	if err = json.NewDecoder(strings.NewReader(jsonfile[0])).Decode(&item); err != nil {
+		logger.Warn(err)
+	}
 	return
 }
 

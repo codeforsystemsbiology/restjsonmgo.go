@@ -22,6 +22,7 @@ package main
 import (
 	"flag"
 	"http"
+	"os"
 	"url"
 	"github.com/codeforsystemsbiology/rest.go"
 	"github.com/codeforsystemsbiology/verboselogger.go"
@@ -71,6 +72,7 @@ func StartREST(configFile *conf.ConfigFile) {
 	for _, domain := range domains {
 		dbhost := GetRequiredString(configFile, domain, "dbHost")
 		dbstore := GetRequiredString(configFile, domain, "dbName")
+		jsonParameter := GetRequiredString(configFile, domain, "jsonParameter")
 		proxyTarget, err := configFile.GetString(domain, "serviceProxy")
 		if err != nil {
 			logger.Warn(err)
@@ -79,7 +81,7 @@ func StartREST(configFile *conf.ConfigFile) {
 
 		targetUrl, _ := url.Parse(proxyTarget)
 		store := &JsonStore{Domain: domain, Host: dbhost, Store: dbstore}
-		rest.Resource(domain, RestJsonMongo{Store: store, Target: targetUrl})
+		rest.Resource(domain, RestJsonMongo{Store: store, Target: targetUrl, JsonParam: jsonParameter})
 
 		contentType, err := configFile.GetString(domain, "contentType")
 		if err != nil {
@@ -102,8 +104,9 @@ func StartHtmlHandler(configFile *conf.ConfigFile) {
 }
 
 func GetRequiredString(config *conf.ConfigFile, section string, key string) (value string) {
-	if value, err := config.GetString(section, key); err != nil {
+	var err os.Error
+	if value, err = config.GetString(section, key); err != nil {
 		logger.Fatalf("[CONFIG] [%v] required in section [%v]", key, section)
 	}
-	return
+	return value
 }

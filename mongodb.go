@@ -46,7 +46,7 @@ func (this *JsonStore) GetCollection() (c mgo.Collection, err os.Error) {
 
 func (this *JsonStore) Create(itemId string, item interface{}) (err os.Error) {
 	logger.Debug("Create(%v,%v)", itemId, item)
-	item["Id"] = itemId
+	//	item["Id"] = itemId
 
 	collection, err := this.GetCollection()
 	if err != nil {
@@ -90,7 +90,7 @@ func (this *JsonStore) Update(itemId string, item interface{}) (err os.Error) {
 	return collection.Update(bson.M{"Id": itemId}, item)
 }
 
-func (this *JsonStore) Find(m map[string]interface{}) (items []interface{}, err os.Error) {
+func (this *JsonStore) Find(m map[string][]string) (items []interface{}, err os.Error) {
 	//    queryByValues := bson.M{}
 	//    for key, val := range values {
 	//        queryByValues[key] = val
