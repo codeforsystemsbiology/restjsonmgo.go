@@ -78,7 +78,7 @@ func StartREST() {
 		}
 
 		targetUrl, _ := url.Parse(proxyTarget)
-		store := &JsonStore{Domain: domain, Host: dbhost, Store: dbstore}
+		store := &JsonStore{Domain: domain, Host: dbhost, Database: dbstore}
 		rest.Resource(domain, RestJsonMongo{Store: store, Target: targetUrl, JsonParam: jsonParameter})
 
 		contentType, err := configFile.GetString(domain, "contentType")

@@ -26,9 +26,9 @@ import (
 )
 
 type JsonStore struct {
-	Domain string
-	Host   string
-	Store  string
+	Domain   string
+	Host     string
+	Database string
 }
 
 func (this *JsonStore) GetCollection() (c mgo.Collection, err os.Error) {
@@ -39,7 +39,7 @@ func (this *JsonStore) GetCollection() (c mgo.Collection, err os.Error) {
 	}
 
 	session.SetMode(mgo.Strong, true) // [Safe, Monotonic, Strong] Strong syncs on inserts/updates
-	db := session.DB(this.Store)
+	db := session.DB(this.Database)
 	c = db.C(this.Domain)
 	return
 }
