@@ -9,4 +9,5 @@ _cgo_*
 _obj
 _test
 .idea
+go
 restjsonmgo
