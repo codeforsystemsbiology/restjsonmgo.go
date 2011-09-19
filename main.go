@@ -68,26 +68,33 @@ func InitLogger() {
 func StartREST() {
 	domains := configFile.GetSections()
 	for _, domain := range domains {
-		dbhost := GetRequiredString(configFile, domain, "dbHost")
-		dbstore := GetRequiredString(configFile, domain, "dbName")
-		jsonParameter := GetRequiredString(configFile, domain, "jsonParameter")
-		proxyTarget, err := configFile.GetString(domain, "serviceProxy")
-		if err != nil {
-			logger.Warn(err)
-			logger.Print("no service proxy configured")
-		}
+	    if domain != "default" {
+            dbhost := GetRequiredString(configFile, domain, "dbHost")
+            dbstore := GetRequiredString(configFile, domain, "dbName")
+            jsonParameter := GetRequiredString(configFile, domain, "jsonParameter")
+            proxyTarget, err := configFile.GetString(domain, "serviceProxy")
+            if err != nil {
+                logger.Warn(err)
+                logger.Print("no service proxy configured")
+            }
 
-		targetUrl, _ := url.Parse(proxyTarget)
-		store := &JsonStore{Domain: domain, Host: dbhost, Database: dbstore}
-		rest.Resource(domain, RestJsonMongo{Store: store, Target: targetUrl, JsonParam: jsonParameter})
+            logger.Debug("starting REST: Domain [%v]", domain)
+            logger.Debug("starting REST: MongoDB at [%v,%v]", dbhost, dbstore)
+            logger.Debug("starting REST: JSON Param [%v]", jsonParameter)
+            logger.Debug("starting REST: PostCommit Hook [%v]", proxyTarget)
 
-		contentType, err := configFile.GetString(domain, "contentType")
-		if err != nil {
-			logger.Warn(err)
-			logger.Print("Defaulting content type to application/json")
-			contentType = "application/json"
-		}
-		rest.ResourceContentType(domain, contentType)
+            targetUrl, _ := url.Parse(proxyTarget)
+            store := &JsonStore{Domain: domain, Host: dbhost, Database: dbstore}
+            rest.Resource(domain, RestJsonMongo{Store: store, Target: targetUrl, JsonParam: jsonParameter})
+
+            contentType, err := configFile.GetString(domain, "contentType")
+            if err != nil {
+                logger.Warn(err)
+                contentType = "application/json"
+            }
+            logger.Debug("starting REST: Content Type [%v]", contentType)
+            rest.ResourceContentType(domain, contentType)
+	    }
 	}
 }
 
@@ -104,6 +111,7 @@ func StartHtmlHandler() {
 // starts HTTP server based on hostname in configuration file
 func ListenAndServe() {
 	hostname := GetRequiredString(configFile, "default", "hostname")
+	logger.Debug("ListenAndServe():%v", hostname)
 	if err := http.ListenAndServe(hostname, nil); err != nil {
 		logger.Fatal(err.String())
 	}

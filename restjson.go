@@ -37,7 +37,7 @@ type RestJsonMongo struct {
 }
 
 // GET /<domain>
-func (this *RestJsonMongo) Index(rw http.ResponseWriter, values url.Values, header http.Header) {
+func (this RestJsonMongo) Index(rw http.ResponseWriter, values url.Values, header http.Header) {
 	logger.Debug("Index():%v,%v", values, header)
 	items, err := this.Store.Find(values)
 	if err != nil {
@@ -51,7 +51,7 @@ func (this *RestJsonMongo) Index(rw http.ResponseWriter, values url.Values, head
 	}
 }
 // POST /<domain>
-func (this *RestJsonMongo) Create(rw http.ResponseWriter, r *http.Request) (item interface{}) {
+func (this RestJsonMongo) Create(rw http.ResponseWriter, r *http.Request) (item interface{}) {
 	logger.Debug("Create()")
 
 	if err := this.LoadJson(r, item); err != nil {
@@ -70,7 +70,7 @@ func (this *RestJsonMongo) Create(rw http.ResponseWriter, r *http.Request) (item
 	return
 }
 // GET /<domain>/id
-func (this *RestJsonMongo) Find(rw http.ResponseWriter, id string) {
+func (this RestJsonMongo) Find(rw http.ResponseWriter, id string) {
 	logger.Debug("Find(%v)", id)
 	storedItem, err := this.Store.Get(id)
 	if storedItem == nil {
@@ -88,7 +88,7 @@ func (this *RestJsonMongo) Find(rw http.ResponseWriter, id string) {
 	}
 }
 // POST /jobs/id/stop or POST /jobs/id/kill
-func (this *RestJsonMongo) Act(rw http.ResponseWriter, parts []string, r *http.Request) (item interface{}) {
+func (this RestJsonMongo) Act(rw http.ResponseWriter, parts []string, r *http.Request) (item interface{}) {
 	logger.Debug("Act(%v):%v", r.URL.Path, parts)
 
 	if len(parts) < 2 {
@@ -116,7 +116,7 @@ func (this *RestJsonMongo) Act(rw http.ResponseWriter, parts []string, r *http.R
 	return
 }
 
-func (this *RestJsonMongo) LoadJson(r *http.Request, item interface{}) (err os.Error) {
+func (this RestJsonMongo) LoadJson(r *http.Request, item interface{}) (err os.Error) {
 	logger.Debug("LoadJson(%v)", r.URL.Path)
 
 	if err = r.ParseForm(); err != nil {
