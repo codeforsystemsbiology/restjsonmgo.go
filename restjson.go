@@ -47,6 +47,7 @@ func (this RestJsonMongo) Index(rw http.ResponseWriter, values url.Values, heade
 
 	handle := ItemsHandle{Items: items, NumberOfItems: len(items)}
 	if err := json.NewEncoder(rw).Encode(handle); err != nil {
+		logger.Warn(err)
 		http.Error(rw, err.String(), http.StatusBadRequest)
 	}
 }
@@ -66,6 +67,7 @@ func (this RestJsonMongo) Create(rw http.ResponseWriter, r *http.Request) (item 
 		return
 	}
 
+	defer this.PostCommit(itemId)
 	this.Find(rw, itemId)
 	return
 }
@@ -129,6 +131,10 @@ func (this RestJsonMongo) LoadJson(r *http.Request, item interface{}) (err os.Er
 		logger.Warn(err)
 	}
 	return
+}
+
+func (this RestJsonMongo) PostCommit(itemId string) {
+	logger.Debug("PostCommit(%v)", itemId)
 }
 
 type ItemsHandle struct {
