@@ -26,6 +26,7 @@ import (
 	"github.com/codeforsystemsbiology/rest.go"
 	"github.com/codeforsystemsbiology/verboselogger.go"
 	"goconf.googlecode.com/hg"
+	"launchpad.net/mgo"
 )
 
 var logger *log4go.VerboseLogger
@@ -60,6 +61,11 @@ func InitLogger() {
 		verbose = true
 	}
 	logger.Printf("verbose set [%v]", verbose)
+
+	if verbose {
+	    mgo.SetLogger(logger)
+	    mgo.SetDebug(verbose)
+	}
 }
 
 // starts service based on the given configuration file
